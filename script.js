@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         自动答题脚本（需人工看着的粗糙版本）
+// @name         半自动安全微伴答题脚本
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  提取题目并自动选择答案，支持手动触发
 // @author       ChatGPT-4o and MapleL
 // @match        https://weiban.mycourse.cn/*
@@ -13,15 +13,18 @@
     'use strict';
     let lastQuestion;
 
-    // 提取页面中的题目和选项
-    function getQuestionAndOptions() {
+    // 提取页面中的题目
+    function getQuestion() {
         let question = document.querySelector('.quest-stem').innerText.trim();
-        question = question.replace(/^[\d.、]+/, '').trim();
-        let options = Array.from(document.querySelectorAll('.quest-option-item .quest-option-top')).map(item => item.innerText.trim());
-        return { question, options };
+        return question.replace(/^[\d.、]+/, '').trim();
     }
 
-    // 在 GitHub 文本中查找答案
+    // 提取页面中的选项
+    function getOptions() {
+        return Array.from(document.querySelectorAll('.quest-option-item .quest-option-top')).map(item => item.innerText.trim());
+    }
+
+    // 查找 GitHub 文本中是否存在该题的答案
     function findAnswerInGitHub(question) {
         return new Promise((resolve, reject) => {
             GM_xmlhttpRequest({
@@ -33,8 +36,7 @@
                         const lines = content.split('\n');
                         const matchedLine = lines.find(line => line.includes(question));
                         if (matchedLine) {
-                            // 提取所有可能的答案，以“|”为分隔符
-                            const answerParts = matchedLine.split('|').slice(2).map(answer => answer.trim()).filter(answer => answer.length > 0);
+                            const answerParts = matchedLine.split('|').slice(3).map(answer => answer.trim()).filter(answer => answer.length > 0);
                             resolve(answerParts);
                         } else {
                             resolve(null);
@@ -50,53 +52,81 @@
         });
     }
 
+    // 选择正确答案
+    function selectOptionByText(answer) {
+        let options = getOptions();
+        let correctOption = options.find(option => option.includes(answer));
+        if (correctOption) {
+            let optionElement = Array.from(document.querySelectorAll('.quest-option-item')).find(item => item.innerText.includes(correctOption));
+            if (optionElement) {
+                optionElement.click();
+                console.log(`选项: ${correctOption} 被选择`);
+                return true;
+            } else {
+                console.log(`选项: ${correctOption} 不存在，选择失败`);
+                return false;
+            }
+        }
+    }
+
     // 自动选择正确答案（多选题支持）
     async function selectCorrectAnswer() {
-        let { question, options } = getQuestionAndOptions();
+        let question = getQuestion();
         let answers = await findAnswerInGitHub(question);
+        let errFlag = false;
+
+        console.log(`获取到题目：${question}`);
+        console.log(`获取到答案：${answers}`)
 
         if (answers && answers.length > 0) {
             answers.forEach(answer => {
-                let correctOption = options.find(option => option.includes(answer));
-                if (correctOption) {
-                    let optionElement = Array.from(document.querySelectorAll('.quest-option-item')).find(item => item.innerText.includes(correctOption));
-                    if (optionElement) {
-                        optionElement.click();
-                        console.log(`题目: ${question}，答案: ${answer}，选项: ${correctOption}`);
-                    }
+                if (!selectOptionByText(answer)) {
+                    errFlag = true;
+                    console.log(`答案 ${answer} 与选项不匹配，已暂停答题`);
                 }
             });
-
-            // 找到包含 "下一题" 文本的按钮
-            const buttons = document.querySelectorAll('button .mint-button-text');
-            let nextButton = null;
-
-            buttons.forEach(button => {
-                if (button.textContent.includes("下一题")) {
-                    nextButton = button;
-                }
-            });
-
-            if (nextButton) {
-                if (lastQuestion!=question) {
-                    lastQuestion = question;
-                // 等待1秒后再点击按钮
-                    setTimeout(() => {
-                        nextButton.click();
-                        console.log('1秒后点击了下一题按钮');
-                        setTimeout(() => {
-                            selectCorrectAnswer();
-                            console.log('继续自动答题');
-                        }, 1000);
-                    }, 1000);
-                } else {
-                    console.log('无法继续答题');
-                }
-            } else {
-                console.log('未找到下一题按钮');
-            }
         } else {
+            errFlag = true;
             console.log(`未找到题目: ${question} 对应的答案`);
+        }
+        if (errFlag == true) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    async function startAutoAnswer() {
+        let selectStatus = await selectCorrectAnswer();
+        if (selectStatus == true) {
+            lastQuestion = getQuestion();
+            setTimeout(() => {
+                const buttons = document.querySelectorAll('button .mint-button-text');
+                let nextButton = Array.from(buttons).find(button => button.textContent.includes("下一题"));
+                if (nextButton) {
+                    nextButton.click();
+                    console.log('延迟0.5秒后点击下一题');
+                    const observer = new MutationObserver((mutationsList, observer) => {
+                        console.log('正在检测题目更新');
+                        let newQuestion = getQuestion();
+                        if (newQuestion !== lastQuestion) {
+                            console.log('检测到题目更新，即将延迟0.5秒后继续自动答题');
+                            observer.disconnect();
+                            setTimeout(() => {
+                                startAutoAnswer();
+                                console.log('继续自动答题');
+                            }, 500);
+                        }
+                    });
+                    observer.observe(document.querySelector('.quest-stem').parentNode, { childList: true, subtree: true, characterData: true });
+                    console.log('开始检测题目更新');
+                } else {
+                    console.log('未找到下一题按钮');
+                }
+            }, 500);
+        } else {
+            console.log(`题目: ${getQuestion()} 自动答题失败`);
+            alert('未找到题目对应的答案，请手动作答');
         }
     }
 
@@ -117,7 +147,7 @@
 
         button.addEventListener('click', function() {
             console.log("尝试自动答题");
-            selectCorrectAnswer();
+            startAutoAnswer();
         });
 
         document.body.appendChild(button);
