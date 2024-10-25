@@ -8,11 +8,11 @@
 
 ## 使用方法
 
-1. 浏览器安装[油猴](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)（也叫篡改猴，英文名Tampermonkey）插件
+1. 浏览器安装[油猴](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)（也叫篡改猴，英文名Tampermonkey）插件，并在其中添加此脚本 [script.js](./script.js)
 
-2. 在浏览器上[登录安全微伴账号](http://weiban.mycourse.cn/)并开始一次考试
+2. 在浏览器上[登录安全微伴账号](http://weiban.mycourse.cn/)并开始考试
 
-3. 点击右上角的开始自动答题按钮
+3. 题目加载后点击右上角的开始自动答题按钮
 
 4. 在弹出的窗口允许脚本跨域
 
