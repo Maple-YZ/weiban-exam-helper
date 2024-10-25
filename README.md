@@ -11,7 +11,7 @@
 
 1. 浏览器安装[油猴](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)（也叫篡改猴，英文名Tampermonkey）插件
 
-2. 在浏览器上登录安全微伴账号并开始一次考试
+2. 在浏览器上[登录安全微伴账号](http://weiban.mycourse.cn/)并开始一次考试
 
 3. 点击右上角的开始自动答题按钮
 
