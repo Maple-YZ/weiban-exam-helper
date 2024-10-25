@@ -78,20 +78,20 @@
             });
 
             if (nextButton) {
+                if (lastQuestion!=question) {
+                    lastQuestion = question;
                 // 等待1秒后再点击按钮
-                setTimeout(() => {
                     setTimeout(() => {
-                        if (lastQuestion!=question) {
-                            nextButton.click();
-                            lastQuestion = question;
+                        nextButton.click();
+                        console.log('1秒后点击了下一题按钮');
+                        setTimeout(() => {
                             selectCorrectAnswer();
                             console.log('继续自动答题');
-                        } else {
-                            console.log('无法继续答题');
-                        }
+                        }, 1000);
                     }, 1000);
-                    console.log('1秒后点击了下一题按钮');
-                }, 1000);
+                } else {
+                    console.log('无法继续答题');
+                }
             } else {
                 console.log('未找到下一题按钮');
             }
