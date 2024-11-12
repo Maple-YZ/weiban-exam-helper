@@ -8,7 +8,7 @@
 
 ## 使用方法
 
-1. 浏览器安装[油猴](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)（也叫篡改猴，英文名Tampermonkey）插件，并在其中添加此脚本 [半自动安全微伴答题脚本(greasyfork链接)]([./script.js](https://greasyfork.org/en/scripts/514004-%E5%8D%8A%E8%87%AA%E5%8A%A8%E5%AE%89%E5%85%A8%E5%BE%AE%E4%BC%B4%E7%AD%94%E9%A2%98%E8%84%9A%E6%9C%AC))
+1. 浏览器安装[油猴](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)（也叫篡改猴，英文名Tampermonkey）插件，并在其中添加此脚本 [半自动安全微伴答题脚本(greasyfork链接)](https://greasyfork.org/en/scripts/514004-半自动安全微伴答题脚本)
 
 2. 在浏览器上[登录安全微伴账号](http://weiban.mycourse.cn/)并开始考试
 
